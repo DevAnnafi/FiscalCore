@@ -8,7 +8,7 @@ class TaxInput(BaseModel):
 class BracketResult(BaseModel):
     rate : float
     floor : float
-    ceiling : None
+    ceiling : Optional[float]
     taxable_income_in_bracket : float
     tax_in_bracket : float
 
