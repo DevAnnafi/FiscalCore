@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { JSX } from 'react';
 import { TaxRequest, TaxResult } from '@/types/tax';
 import { calculateTax } from '@/lib/api';
+import { TaxChart } from '@/components/TaxChart';
 
 export function IncomeForm(): JSX.Element {
 
@@ -55,6 +56,8 @@ export function IncomeForm(): JSX.Element {
                     <p className="text-gray-300 text-lg">
                         Marginal Rate: <span className="text-white font-bold"> {(result.marginal_rate * 100).toFixed(2)}% </span>
                     </p>
+
+                   <TaxChart brackets={result.brackets} />
 
                 </div>
             )}
