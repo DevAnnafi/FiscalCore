@@ -70,23 +70,23 @@ class FederalTaxStrategy():
         brackets = self.get_brackets(tax_input.filing_status)
         total_tax = 0
         total_brackets = []
+        marginal_rate = 0
         for floor, ceiling, rate in brackets:
+            if taxable_income <= floor:
+                break
             if ceiling is None:
                 income_cap = taxable_income
             else:
                 income_cap = min(taxable_income, ceiling) 
 
-            if taxable_income <= floor:
-                break
-
             income_in_bracket = income_cap - floor
             total_tax += income_in_bracket * rate
+            marginal_rate = rate
 
             bracket_result = BracketResult(rate=rate, floor=floor, ceiling=ceiling, taxable_income_in_bracket=income_in_bracket, tax_in_bracket=income_in_bracket * rate)
             total_brackets.append(bracket_result)
 
         effective_rate = (total_tax / taxable_income)
-        marginal_rate = rate
 
         tax_result = TaxResult(taxable_income=taxable_income, standard_deduction=self.get_standard_deduction(tax_input.filing_status), total_tax=total_tax, effective_rate=effective_rate, marginal_rate=marginal_rate, brackets=total_brackets)
         return tax_result
