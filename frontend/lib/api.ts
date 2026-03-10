@@ -12,3 +12,14 @@ Promise<TaxResult> {
     return data
 }
    
+export async function login(email:string, password:string){
+    const options = {
+        method : "POST",
+        headers : {"Content-Type": "application/json"}, 
+        body: JSON.stringify({email, password}),
+        credentials : "include"
+    } as RequestInit
+    const response = await fetch("http://localhost:8000/api/v1/auth/login", options)
+    const data = await response.json()
+    return data
+}
