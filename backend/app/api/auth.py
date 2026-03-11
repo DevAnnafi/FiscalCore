@@ -11,6 +11,7 @@ router = APIRouter()
 class RegisterRequest(BaseModel):
     email:str
     password:str
+    full_name:str
 
 class LoginRequest(BaseModel):
     email:str
@@ -23,7 +24,7 @@ def register_request(request: RegisterRequest):
        if result is not None:
             raise HTTPException(status_code=400, detail="Email already registered")
        else:       
-            user = User(email=request.email, hashed_password=hash_password(request.password))
+            user = User(email=request.email, hashed_password=hash_password(request.password), full_name=request.full_name)
             db.add(user)
             db.commit()
             return {"message": "User created successfully"}
