@@ -1,5 +1,7 @@
 import { TaxRequest, TaxResult } from "@/types/tax";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+
 export async function calculateTax(parameter: TaxRequest): 
 Promise<TaxResult> {
 
@@ -7,7 +9,7 @@ Promise<TaxResult> {
         method : "POST", 
         headers : {"Content-Type": "application/json"}, 
         body: JSON.stringify(parameter)}
-    const response = await fetch("http://localhost:8000/api/v1/calculate/federal", options)
+    const response = await fetch(`${API_BASE}/calculate/federal`, options)
     const data = await response.json()
     return data
 }
@@ -19,7 +21,7 @@ export async function login(email:string, password:string){
         body: JSON.stringify({email, password}),
         credentials : "include"
     } as RequestInit
-    const response = await fetch("http://localhost:8000/api/v1/auth/login", options)
+    const response = await fetch(`${API_BASE}/auth/login`, options)
     const data = await response.json()
     return data
 }
@@ -31,7 +33,7 @@ export async function register(full_name:string, email:string, password:string) 
         body: JSON.stringify({email, password, full_name}),
         credentials : "include"
     } as RequestInit
-    const response = await fetch("http://localhost:8000/api/v1/auth/register", options)
+    const response = await fetch(`${API_BASE}/auth/register`, options)
     const data = await response.json()
     return data
 }
@@ -41,7 +43,7 @@ export async function getMe() {
         method : "GET",
         credentials : "include"
     } as RequestInit
-    const response = await fetch("http://localhost:8000/api/v1/auth/me", options)
+    const response = await fetch(`${API_BASE}/auth/me`, options)
     const data = await response.json()
     return data
 }
@@ -51,7 +53,7 @@ export async function logout() {
         method : "POST",
         credentials : "include"
     } as RequestInit
-    const response = await fetch("http://localhost:8000/api/v1/auth/logout", options)
+    const response = await fetch(`${API_BASE}/auth/logout`, options)
     const data = await response.json()
     return data
 }
@@ -64,7 +66,7 @@ export async function saveScenario(data: {
     effective_rate: number;
     marginal_rate: number;
 }) {
-    const res = await fetch(`http://localhost:8000/api/v1/scenarios`, {
+    const res = await fetch(`${API_BASE}/scenarios`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -74,14 +76,14 @@ export async function saveScenario(data: {
 }
 
 export async function getScenarios() {
-    const res = await fetch(`http://localhost:8000/api/v1/scenarios`, {
+    const res = await fetch(`${API_BASE}/scenarios`, {
         credentials: 'include',
     });
     return res.json();
 }
 
 export async function deleteScenario(id: number) {
-    const res = await fetch(`http://localhost:8000/api/v1/scenarios/${id}`, {
+    const res = await fetch(`${API_BASE}/scenarios/${id}`, {
         method: 'DELETE',
         credentials: 'include',
     });
@@ -89,7 +91,7 @@ export async function deleteScenario(id: number) {
 }
 
 export async function createCheckout() {
-    const res = await fetch('http://localhost:8000/api/v1/payments/checkout', {
+    const res = await fetch(`${API_BASE}/payments/checkout`, {
         method: 'POST',
         credentials: 'include',
     });
