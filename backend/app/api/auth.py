@@ -4,9 +4,8 @@ from app.models.user import User
 from app.core.security import hash_password, verify_password, create_access_token
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-import requests
 from jose import jwt, JWTError
-from app.core.config import secret_key, algorithm
+from app.core.config import settings
 
 
 router = APIRouter()
@@ -50,10 +49,22 @@ def login_request(request: LoginRequest, response: Response):
 def get_me(access_token: str = Cookie(None)):
     if access_token == None:
         raise HTTPException(status_code=400)
-    payload = jwt.decode()
+    payload = jwt.decode(access_token, settings.secret_key, algorithms=[settings.algorithm])
     email = payload.get("sub")
-    pass
+    with SessionLocal() as db:
+        user = db.query(User).filter(User.email == email).first()
+        if user is None:
+            raise HTTPException(status_code=401, detail="User not found")
+        return {"email": user.email, "full_name": user.full_name}
 
+
+@router.post("/logout")
+def logout(response: Response, access_token: str = Cookie(None)):
+   response.delete_cookie("access_token")
+   return {
+       "message" : "Logged Out"
+   }
+    
     
     
     
