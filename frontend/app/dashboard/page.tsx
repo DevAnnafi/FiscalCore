@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getMe, logout, calculateTax } from '@/lib/api';
 import { TaxRequest, TaxResult } from '@/types/tax';
+import jsPDF from 'jspdf';
 
 export default function Dashboard() {
-    const [user, setUser] = useState<{ email: string; full_name: string } | null>(null);
+    const [user, setUser] = useState<{ email: string; full_name: string; plan: string } | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [grossIncome, setGrossIncome] = useState<number>(0);
     const [filingStatus, setFilingStatus] = useState<TaxRequest['filing_status']>('single');
@@ -94,13 +95,21 @@ export default function Dashboard() {
             '='.repeat(60),
         ];
 
-        const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `fiscalcore-report-${new Date().getFullYear()}.txt`;
-        a.click();
-        URL.revokeObjectURL(url);
+        const doc = new jsPDF()
+        doc.setFontSize(10)
+        doc.setFont('courier', 'normal')
+
+        let y = 20
+        lines.forEach((line) => {
+            if (y > 280) {
+                doc.addPage()
+                y = 20
+            }
+            doc.text(line, 20, y)
+            y += 6
+        })
+
+        doc.save(`fiscalcore-report-${new Date().getFullYear()}.pdf`)
     }
 
     if (loading) return (
@@ -257,17 +266,21 @@ export default function Dashboard() {
                                 <div className="flex items-center gap-3">
                                     <h2 className="text-xl font-semibold text-white tracking-tight">Estimated Summary</h2>
                                 </div>
-                                <button
-                                    onClick={handleDownloadReport}
-                                    className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white transition-colors"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                        <polyline points="7 10 12 15 17 10" />
-                                        <line x1="12" x2="12" y1="15" y2="3" />
-                                    </svg>
-                                    Download Report
-                                </button>
+                                {user?.plan === 'pro' ? (
+                                    <button
+                                        onClick={handleDownloadReport}
+                                        className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white transition-colors"
+                                    >
+                                        Download Report
+                                    </button>
+                                ) : (
+                                    <button
+                                        disabled
+                                        className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-slate-500 cursor-not-allowed opacity-50"
+                                    >
+                                        Pro Only (Report)
+                                    </button>
+                                )}
                             </div>
 
                             <div className="p-6 sm:p-8 space-y-8">

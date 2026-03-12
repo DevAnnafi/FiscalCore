@@ -128,7 +128,7 @@ export default function Home() {
               <tr>
                 <th style={{ padding: '20px 16px', textAlign: 'left', borderBottom: '1px solid #d4d4d8', fontWeight: 500, color: '#71717a', width: '30%' }}>Step</th>
                 <th style={{ padding: '20px 16px', textAlign: 'left', borderBottom: '1px solid #d4d4d8', fontWeight: 500, color: '#71717a' }}>Action</th>
-                <th style={{ padding: '20px 16px', textAlign: 'left', borderBottom: '1px solid #d4d4d8', fontWeight: 500, color: '#71717a', backgroundColor: '#ebebec', border: '1px solid #d4d4d8', borderBottom: '1px solid #d4d4d8' }}>Result</th>
+                <th style={{ padding: '20px 16px', textAlign: 'left', borderBottom: '1px solid #d4d4d8', fontWeight: 500, color: '#71717a', backgroundColor: '#ebebec', border: '1px solid #d4d4d8' }}>Result</th>
               </tr>
             </thead>
             <tbody>
@@ -179,7 +179,7 @@ export default function Home() {
             </thead>
             <tbody>
               {[
-                { spec: 'Monthly Price', free: '$0 / mo', pro: '$9 / mo', enterprise: 'Custom' },
+                { spec: 'Monthly Price', free: '$0 / mo', pro: '$20 / mo', enterprise: 'Custom' },
                 { spec: 'Tax Calculations', free: 'Unlimited', pro: 'Unlimited', enterprise: 'Unlimited' },
                 { spec: 'Filing Statuses', free: 'All 4', pro: 'All 4', enterprise: 'All 4' },
                 { spec: 'Downloadable Reports', free: '—', pro: '✓', enterprise: '✓' },
