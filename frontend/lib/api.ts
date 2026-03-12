@@ -55,3 +55,35 @@ export async function logout() {
     const data = await response.json()
     return data
 }
+
+export async function saveScenario(data: {
+    name: string;
+    gross_income: number;
+    filing_status: string;
+    total_tax: number;
+    effective_rate: number;
+    marginal_rate: number;
+}) {
+    const res = await fetch(`http://localhost:8000/api/v1/scenarios`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+    });
+    return res.json();
+}
+
+export async function getScenarios() {
+    const res = await fetch(`http://localhost:8000/api/v1/scenarios`, {
+        credentials: 'include',
+    });
+    return res.json();
+}
+
+export async function deleteScenario(id: number) {
+    const res = await fetch(`http://localhost:8000/api/v1/scenarios/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+    return res.json();
+}
