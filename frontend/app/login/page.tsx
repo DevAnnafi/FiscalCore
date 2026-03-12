@@ -30,7 +30,7 @@ export default function Login() {
     return (
         <div className="min-h-screen bg-gray-900 flex items-center justify-center p-8">
             <div className="bg-gray-800 rounded-2xl p-8 w-full max-w-md shadow-xl">
-                <h1 className="text-2xl font-bold text-white mb-8"> Sign In </h1>
+                <h1 className="text-2xl text-center font-bold text-white mb-8"> Sign In </h1>
                 <input className="w-full bg-gray-700 text-white rounded-lg p-3 mb-4 outline-none focus:ring-2 focus:ring-blue-500" placeholder='Email'
                 type="email"
                 value={email}
