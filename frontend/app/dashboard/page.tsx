@@ -31,7 +31,6 @@ export default function Dashboard() {
                 router.push('/login')
             }
         })
-
     }, [])
 
     async function handleSignOut(): Promise<void> {
@@ -121,7 +120,7 @@ export default function Dashboard() {
         <div className="min-h-screen bg-slate-950 flex items-center justify-center">
             <div className="flex items-center gap-2">
                 {[0, 150, 300].map((delay) => (
-                    <div key={delay} className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" style={{ animationDelay: `${delay}ms` }} />
+                    <div key={delay} className="w-2 h-2 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: `${delay}ms` }} />
                 ))}
             </div>
         </div>
@@ -130,33 +129,35 @@ export default function Dashboard() {
     return (
         <div className="min-h-screen bg-slate-950 text-slate-50 relative overflow-x-hidden">
 
-            {/* Background glows */}
-            <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
-            <div className="fixed bottom-[-10%] right-[-5%] w-[30%] h-[40%] bg-blue-600/10 rounded-full blur-[100px] pointer-events-none" />
-
             {/* Navbar */}
-            <nav className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/60 backdrop-blur-xl">
+            <nav className="sticky top-0 z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <span className="font-bold tracking-tight text-white text-lg">FiscalCore</span>
-                    </div>
+                    <span className="font-bold tracking-tight text-white text-lg">Fiscal<span style={{ color: '#2b9d8f' }}>Core</span></span>
                     <div className="flex items-center gap-4">
                         <div className="text-right hidden sm:block">
                             <p className="text-sm font-medium text-slate-200">{user?.full_name}</p>
                             <p className="text-xs text-slate-500">{user?.email}</p>
                         </div>
+                        {user?.plan === 'pro' && (
+                            <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-white/10 text-white border border-white/10 tracking-wide">
+                                PRO
+                            </span>
+                        )}
                         {user?.plan !== 'pro' && (
                             <button
                                 onClick={async () => {
                                     const { url } = await createCheckout();
                                     window.location.href = url;
                                 }}
-                                className="px-4 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/30 hover:bg-indigo-600 transition-all"
+                                className="px-4 py-2 text-sm font-semibold rounded-lg border border-white/20 text-white hover:bg-white/10 transition-all"
                             >
                                 Upgrade to Pro
                             </button>
                         )}
-                        <button onClick={handleSignOut} className="group flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-400 rounded-lg hover:text-red-400 hover:bg-red-400/10 transition-all duration-200">
+                        <button
+                            onClick={handleSignOut}
+                            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-400 rounded-lg hover:text-red-400 hover:bg-red-400/10 transition-all duration-200"
+                        >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                                 <polyline points="16 17 21 12 16 7" />
@@ -175,7 +176,7 @@ export default function Dashboard() {
                 <header>
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400 mb-2">
+                            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-2">
                                 Welcome back, {user?.full_name?.split(' ')[0]}.
                             </h1>
                             <p className="text-slate-400 text-base sm:text-lg">
@@ -189,6 +190,25 @@ export default function Dashboard() {
                     </div>
                 </header>
 
+                {user?.plan !== 'pro' && (
+                    <div className="flex items-center justify-between px-5 py-3.5 rounded-xl bg-white/5 border border-white/10">
+                        <div className="flex items-center gap-3">
+                            <p className="text-sm text-slate-300">
+                                You're on the <span className="font-semibold text-white">Free plan.</span> Upgrade to Pro to unlock saved scenarios, PDF reports, and more.
+                            </p>
+                        </div>
+                        <button
+                            onClick={async () => {
+                                const { url } = await createCheckout();
+                                window.location.href = url;
+                            }}
+                            className="ml-4 shrink-0 px-4 py-2 text-xs font-semibold rounded-lg border border-white/20 text-white hover:bg-white/10 transition-all"
+                        >
+                            Upgrade →
+                        </button>
+                    </div>
+                )}
+
                 {/* Income Details Card */}
                 <div className="bg-slate-900/40 border border-white/5 backdrop-blur-md rounded-2xl shadow-2xl ring-1 ring-white/10 overflow-hidden">
                     <div className="px-6 py-5 border-b border-white/5 bg-slate-900/50 flex items-center gap-3">
@@ -197,7 +217,7 @@ export default function Dashboard() {
                     <div className="p-6 sm:p-8 space-y-6">
                         {/* Filing status */}
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-3">Filing Status</label>
+                            <label className="block text-sm font-medium text-slate-400 mb-3">Filing Status</label>
                             <div className="flex flex-wrap gap-2">
                                 {(['single', 'married_filing_jointly', 'married_filing_separately', 'head_of_household'] as TaxRequest['filing_status'][]).map((status) => {
                                     const labels: Record<string, string> = {
@@ -212,7 +232,7 @@ export default function Dashboard() {
                                             onClick={() => setFilingStatus(status)}
                                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                                 filingStatus === status
-                                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+                                                    ? 'bg-white text-slate-950 shadow-sm'
                                                     : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
                                             }`}
                                         >
@@ -225,17 +245,17 @@ export default function Dashboard() {
 
                         {/* Gross income */}
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-2">Gross Annual Income</label>
+                            <label className="block text-sm font-medium text-slate-400 mb-2">Gross Annual Income</label>
                             <div className="relative group max-w-sm">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <span className="text-slate-500 font-medium text-lg group-focus-within:text-indigo-400 transition-colors">$</span>
+                                    <span className="text-slate-500 font-medium text-lg">$</span>
                                 </div>
                                 <input
                                     type="number"
                                     value={grossIncome || ''}
                                     onChange={(e) => setGrossIncome(Number(e.target.value))}
                                     placeholder="0.00"
-                                    className="block w-full pl-8 pr-4 py-3.5 bg-slate-950/50 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-lg font-medium"
+                                    className="block w-full pl-8 pr-4 py-3.5 bg-slate-950/50 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:ring-1 focus:ring-white/30 focus:border-white/30 transition-all text-lg font-medium outline-none"
                                 />
                             </div>
                         </div>
@@ -245,7 +265,7 @@ export default function Dashboard() {
                             <button
                                 onClick={handleCalculate}
                                 disabled={calculating || grossIncome <= 0}
-                                className="group inline-flex items-center gap-2 px-8 py-3 text-sm font-semibold text-white bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/30 hover:bg-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+                                className="group inline-flex items-center gap-2 px-8 py-3 text-sm font-semibold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] bg-white text-slate-950 hover:bg-slate-100"
                             >
                                 {calculating ? 'Calculating...' : 'Calculate Taxes'}
                                 {!calculating && (
@@ -265,22 +285,23 @@ export default function Dashboard() {
                         {/* Summary stat cards */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             {[
-                                { label: 'Total Federal Tax', value: formatCurrency(result.total_tax), accent: 'text-red-400' },
-                                { label: 'Effective Rate', value: `${(result.effective_rate * 100).toFixed(2)}%`, accent: 'text-indigo-400' },
-                                { label: 'Marginal Rate', value: `${(result.marginal_rate * 100).toFixed(0)}%`, accent: 'text-blue-400' },
+                                { label: 'Total Federal Tax', value: formatCurrency(result.total_tax) },
+                                { label: 'Effective Rate', value: `${(result.effective_rate * 100).toFixed(2)}%` },
+                                { label: 'Marginal Rate', value: `${(result.marginal_rate * 100).toFixed(0)}%` },
                             ].map((card) => (
                                 <div key={card.label} className="bg-slate-900/40 border border-white/5 rounded-2xl p-6 ring-1 ring-white/10">
-                                    <p className="text-sm text-slate-400 mb-2">{card.label}</p>
-                                    <p className={`text-3xl font-bold ${card.accent}`}>{card.value}</p>
+                                    <p className="text-sm text-slate-500 mb-2">{card.label}</p>
+                                    <p className="text-3xl font-bold text-white">{card.value}</p>
                                 </div>
                             ))}
                         </div>
 
+                        {/* Save Scenario — Pro only */}
                         {user?.plan === 'pro' && (
                             <div className="bg-slate-900/40 border border-white/5 backdrop-blur-md rounded-2xl ring-1 ring-white/10 overflow-hidden">
                                 <div className="px-6 py-5 border-b border-white/5 bg-slate-900/50">
                                     <h2 className="text-xl font-semibold text-white tracking-tight">Save Scenario</h2>
-                                    <p className="text-sm text-slate-400 mt-1">Save this calculation to revisit later.</p>
+                                    <p className="text-sm text-slate-500 mt-1">Save this calculation to revisit later.</p>
                                 </div>
                                 <div className="p-6 flex items-center gap-4">
                                     <input
@@ -288,7 +309,7 @@ export default function Dashboard() {
                                         value={scenarioName}
                                         onChange={(e) => setScenarioName(e.target.value)}
                                         placeholder="e.g. 2025 Full-time estimate"
-                                        className="flex-1 px-4 py-3 bg-slate-950/50 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm"
+                                        className="flex-1 px-4 py-3 bg-slate-950/50 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:ring-1 focus:ring-white/30 focus:border-white/30 transition-all text-sm outline-none"
                                     />
                                     <button
                                         onClick={async () => {
@@ -302,10 +323,10 @@ export default function Dashboard() {
                                                 marginal_rate: result.marginal_rate,
                                             });
                                             setScenarioName('');
-                                            getScenarios().then((s) => setScenarios(s));
+                                            getScenarios().then((s) => { if (Array.isArray(s)) setScenarios(s); });
                                         }}
                                         disabled={!scenarioName.trim()}
-                                        className="px-6 py-3 text-sm font-semibold text-white bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/30 hover:bg-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="px-6 py-3 text-sm font-semibold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-white text-slate-950 hover:bg-slate-100"
                                     >
                                         Save
                                     </button>
@@ -316,22 +337,25 @@ export default function Dashboard() {
                         {/* Detailed summary */}
                         <div className="bg-slate-900/40 border border-white/5 backdrop-blur-md rounded-2xl shadow-2xl ring-1 ring-white/10 overflow-hidden">
                             <div className="px-6 py-5 border-b border-white/5 bg-slate-900/50 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <h2 className="text-xl font-semibold text-white tracking-tight">Estimated Summary</h2>
-                                </div>
+                                <h2 className="text-xl font-semibold text-white tracking-tight">Estimated Summary</h2>
                                 {user?.plan === 'pro' ? (
                                     <button
                                         onClick={handleDownloadReport}
                                         className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-white transition-colors"
                                     >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                            <polyline points="7 10 12 15 17 10" />
+                                            <line x1="12" x2="12" y1="15" y2="3" />
+                                        </svg>
                                         Download Report
                                     </button>
                                 ) : (
                                     <button
                                         disabled
-                                        className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-slate-500 cursor-not-allowed opacity-50"
+                                        className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-slate-600 cursor-not-allowed"
                                     >
-                                        Pro Only (Report)
+                                         Pro Only (Downloadble Report)
                                     </button>
                                 )}
                             </div>
@@ -342,11 +366,11 @@ export default function Dashboard() {
                                     <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Income Details</h3>
                                     {[
                                         { label: 'Gross Income', value: formatCurrency(grossIncome), cls: 'text-slate-200' },
-                                        { label: 'Standard Deduction', value: `−${formatCurrency(result.standard_deduction)}`, cls: 'text-red-400' },
+                                        { label: 'Standard Deduction', value: `−${formatCurrency(result.standard_deduction)}`, cls: 'text-slate-400' },
                                         { label: 'Taxable Income', value: formatCurrency(result.taxable_income), cls: 'text-white font-semibold' },
                                     ].map((row) => (
                                         <div key={row.label} className="flex items-center justify-between text-sm">
-                                            <span className="text-slate-400">{row.label}</span>
+                                            <span className="text-slate-500">{row.label}</span>
                                             <span className={row.cls}>{row.value}</span>
                                         </div>
                                     ))}
@@ -369,7 +393,7 @@ export default function Dashboard() {
                                                 </div>
                                                 <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                                     <div
-                                                        className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full transition-all duration-700"
+                                                        className="h-full bg-white/60 rounded-full transition-all duration-700"
                                                         style={{ width: `${pct}%` }}
                                                     />
                                                 </div>
@@ -384,7 +408,7 @@ export default function Dashboard() {
                                         <p className="text-base font-semibold text-white">Total Estimated Federal Tax</p>
                                         <p className="text-xs text-slate-500 mt-1">Based on 2025 {filingStatus.replace(/_/g, ' ')} brackets</p>
                                     </div>
-                                    <span className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">
+                                    <span className="text-4xl font-bold text-white">
                                         {formatCurrency(result.total_tax)}
                                     </span>
                                 </div>
@@ -398,14 +422,14 @@ export default function Dashboard() {
                     <div className="bg-slate-900/40 border border-white/5 backdrop-blur-md rounded-2xl shadow-2xl ring-1 ring-white/10 overflow-hidden">
                         <div className="px-6 py-5 border-b border-white/5 bg-slate-900/50">
                             <h2 className="text-xl font-semibold text-white tracking-tight">Saved Scenarios</h2>
-                            <p className="text-sm text-slate-400 mt-1">{scenarios.length} scenario{scenarios.length !== 1 ? 's' : ''} saved</p>
+                            <p className="text-sm text-slate-500 mt-1">{scenarios.length} scenario{scenarios.length !== 1 ? 's' : ''} saved</p>
                         </div>
                         <div className="divide-y divide-white/5">
                             {scenarios.map((s) => (
                                 <div key={s.id} className="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors group">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400">
+                                        <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
                                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
                                             </svg>
                                         </div>
@@ -416,13 +440,13 @@ export default function Dashboard() {
                                     </div>
                                     <div className="flex items-center gap-6">
                                         <div className="text-right hidden sm:block">
-                                            <p className="text-sm font-semibold text-red-400">{formatCurrency(s.total_tax)}</p>
+                                            <p className="text-sm font-semibold text-white">{formatCurrency(s.total_tax)}</p>
                                             <p className="text-xs text-slate-500">{(s.effective_rate * 100).toFixed(2)}% effective</p>
                                         </div>
                                         <button
                                             onClick={async () => {
                                                 await deleteScenario(s.id);
-                                                getScenarios().then((data) => setScenarios(data));
+                                                getScenarios().then((data) => { if (Array.isArray(data)) setScenarios(data); });
                                             }}
                                             className="opacity-0 group-hover:opacity-100 p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
                                         >
@@ -435,17 +459,17 @@ export default function Dashboard() {
                             ))}
                         </div>
                     </div>
-                    )}
-                    </main>
+                )}
+            </main>
 
             {/* Footer */}
             <footer className="border-t border-white/5 bg-slate-950/40 mt-12 backdrop-blur-sm">
                 <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p className="text-xs text-slate-500">© 2025 FiscalCore. All rights reserved.</p>
                     <div className="flex items-center gap-4 text-xs text-slate-500">
-                        <a href="#" className="hover:text-slate-300 transition-colors">Privacy</a>
-                        <a href="#" className="hover:text-slate-300 transition-colors">Terms</a>
-                        <a href="#" className="hover:text-slate-300 transition-colors">Support</a>
+                        <a href="/privacy" className="hover:text-slate-300 transition-colors">Privacy</a>
+                        <a href="/terms" className="hover:text-slate-300 transition-colors">Terms</a>
+                        <a href="/support" className="hover:text-slate-300 transition-colors">Support</a>
                     </div>
                 </div>
             </footer>
