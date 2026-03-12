@@ -1,9 +1,12 @@
-from fastapi import APIRouter, HTTPException, status, Response
+from fastapi import APIRouter, HTTPException, status, Response, Cookie
 from app.core.database import SessionLocal
 from app.models.user import User
 from app.core.security import hash_password, verify_password, create_access_token
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+import requests
+from jose import jwt, JWTError
+from app.core.config import secret_key, algorithm
 
 
 router = APIRouter()
@@ -43,5 +46,15 @@ def login_request(request: LoginRequest, response: Response):
             "message" : "Login Successful"
         }
    
-        
+@router.get("/me")
+def get_me(access_token: str = Cookie(None)):
+    if access_token == None:
+        raise HTTPException(status_code=400)
+    payload = jwt.decode()
+    email = payload.get("sub")
+    
+
+    
+    
+    
         
