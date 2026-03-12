@@ -87,3 +87,11 @@ export async function deleteScenario(id: number) {
     });
     return res.json();
 }
+
+export async function createCheckout() {
+    const res = await fetch('http://localhost:8000/api/v1/payments/checkout', {
+        method: 'POST',
+        credentials: 'include',
+    });
+    return res.json();
+}

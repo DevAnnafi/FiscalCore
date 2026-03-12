@@ -4,6 +4,7 @@ from app.api.routes import router
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.auth import router as auth_router
 from app.api.scenarios import router as scenarios_router
+from app.api.payments import router as payments_router
 
 def create_app() -> FastAPI:
     app = FastAPI(
@@ -22,6 +23,7 @@ def create_app() -> FastAPI:
     app.include_router(router, prefix=settings.api_prefix)
     app.include_router(auth_router, prefix=settings.api_prefix + "/auth")
     app.include_router(scenarios_router, prefix=settings.api_prefix)
+    app.include_router(payments_router, prefix=settings.api_prefix)
 
     return app
 

@@ -40,6 +40,9 @@ def save_scenarios(request:SaveScenarioRequest,access_token: str = Cookie(None))
         user = db.query(User).filter(User.email == email).first()
         if user.plan != 'pro':
             raise HTTPException(status_code=403, detail="Pro plan required")
+        count = db.query(Scenario).filter(Scenario.user_id == user.id).count()
+        if count >= 20:
+            raise HTTPException(Status_code=400, detail="Scenario limit reached (20 max)")
         new_scenario = Scenario(
             user_id=user.id,
             name=request.name,

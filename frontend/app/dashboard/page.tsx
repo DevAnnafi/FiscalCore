@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getMe, logout, calculateTax, getScenarios, saveScenario, deleteScenario } from '@/lib/api';
+import { getMe, logout, calculateTax, getScenarios, saveScenario, deleteScenario, createCheckout } from '@/lib/api';
 import { TaxRequest, TaxResult } from '@/types/tax';
 import jsPDF from 'jspdf';
 
@@ -145,6 +145,17 @@ export default function Dashboard() {
                             <p className="text-sm font-medium text-slate-200">{user?.full_name}</p>
                             <p className="text-xs text-slate-500">{user?.email}</p>
                         </div>
+                        {user?.plan !== 'pro' && (
+                            <button
+                                onClick={async () => {
+                                    const { url } = await createCheckout();
+                                    window.location.href = url;
+                                }}
+                                className="px-4 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/30 hover:bg-indigo-600 transition-all"
+                            >
+                                Upgrade to Pro
+                            </button>
+                        )}
                         <button onClick={handleSignOut} className="group flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-400 rounded-lg hover:text-red-400 hover:bg-red-400/10 transition-all duration-200">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -383,49 +394,49 @@ export default function Dashboard() {
                 )}
 
                 {/* Saved Scenarios */}
-        {scenarios.length > 0 && (
-            <div className="bg-slate-900/40 border border-white/5 backdrop-blur-md rounded-2xl shadow-2xl ring-1 ring-white/10 overflow-hidden">
-                <div className="px-6 py-5 border-b border-white/5 bg-slate-900/50">
-                    <h2 className="text-xl font-semibold text-white tracking-tight">Saved Scenarios</h2>
-                    <p className="text-sm text-slate-400 mt-1">{scenarios.length} scenario{scenarios.length !== 1 ? 's' : ''} saved</p>
-                </div>
-                <div className="divide-y divide-white/5">
-                    {scenarios.map((s) => (
-                        <div key={s.id} className="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors group">
-                            <div className="flex items-center gap-4">
-                                <div className="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-slate-200">{s.name}</p>
-                                    <p className="text-xs text-slate-500 mt-0.5">{s.filing_status.replace(/_/g, ' ')} · {formatCurrency(s.gross_income)} gross</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-6">
-                                <div className="text-right hidden sm:block">
-                                    <p className="text-sm font-semibold text-red-400">{formatCurrency(s.total_tax)}</p>
-                                    <p className="text-xs text-slate-500">{(s.effective_rate * 100).toFixed(2)}% effective</p>
-                                </div>
-                                <button
-                                    onClick={async () => {
-                                        await deleteScenario(s.id);
-                                        getScenarios().then((data) => setScenarios(data));
-                                    }}
-                                    className="opacity-0 group-hover:opacity-100 p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                                    </svg>
-                                </button>
-                            </div>
+                {scenarios.length > 0 && (
+                    <div className="bg-slate-900/40 border border-white/5 backdrop-blur-md rounded-2xl shadow-2xl ring-1 ring-white/10 overflow-hidden">
+                        <div className="px-6 py-5 border-b border-white/5 bg-slate-900/50">
+                            <h2 className="text-xl font-semibold text-white tracking-tight">Saved Scenarios</h2>
+                            <p className="text-sm text-slate-400 mt-1">{scenarios.length} scenario{scenarios.length !== 1 ? 's' : ''} saved</p>
                         </div>
-                    ))}
-                </div>
-            </div>
-            )}
-            </main>
+                        <div className="divide-y divide-white/5">
+                            {scenarios.map((s) => (
+                                <div key={s.id} className="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors group">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-slate-200">{s.name}</p>
+                                            <p className="text-xs text-slate-500 mt-0.5">{s.filing_status.replace(/_/g, ' ')} · {formatCurrency(s.gross_income)} gross</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-6">
+                                        <div className="text-right hidden sm:block">
+                                            <p className="text-sm font-semibold text-red-400">{formatCurrency(s.total_tax)}</p>
+                                            <p className="text-xs text-slate-500">{(s.effective_rate * 100).toFixed(2)}% effective</p>
+                                        </div>
+                                        <button
+                                            onClick={async () => {
+                                                await deleteScenario(s.id);
+                                                getScenarios().then((data) => setScenarios(data));
+                                            }}
+                                            className="opacity-0 group-hover:opacity-100 p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    )}
+                    </main>
 
             {/* Footer */}
             <footer className="border-t border-white/5 bg-slate-950/40 mt-12 backdrop-blur-sm">
