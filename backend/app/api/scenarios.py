@@ -24,9 +24,11 @@ def scenarios(access_token: str = Cookie(None)):
     payload = jwt.decode(access_token, settings.secret_key, algorithms=[settings.algorithm])
     email = payload.get("sub")
     with SessionLocal() as db:
-        user = db.query(User).filter(User.email == email).first()       
+        user = db.query(User).filter(User.email == email).first()
         if user is None:
             raise HTTPException(status_code=401, detail="User not found")
+        if user.plan != 'pro':
+            raise HTTPException(status_code=403, detail="Pro plan required")
         scenarios = db.query(Scenario).filter(Scenario.user_id == user.id).all()
         return scenarios
 
@@ -36,6 +38,8 @@ def save_scenarios(request:SaveScenarioRequest,access_token: str = Cookie(None))
     email = payload.get("sub")
     with SessionLocal() as db:
         user = db.query(User).filter(User.email == email).first()
+        if user.plan != 'pro':
+            raise HTTPException(status_code=403, detail="Pro plan required")
         new_scenario = Scenario(
             user_id=user.id,
             name=request.name,
@@ -56,6 +60,8 @@ def delete_scenario(id:int, access_token: str = Cookie(None)):
     email = payload.get("sub")
     with SessionLocal() as db:
         user = db.query(User).filter(User.email == email).first()
+        if user.plan != 'pro':
+            raise HTTPException(status_code=403, detail="Pro plan required")
         scenario = db.query(Scenario).filter(Scenario.id == id, Scenario.user_id == user.id).first()
         if scenario is None:
             raise HTTPException(status_code=404)

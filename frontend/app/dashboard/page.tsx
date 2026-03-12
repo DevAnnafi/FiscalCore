@@ -21,10 +21,11 @@ export default function Dashboard() {
         getMe().then((data) => {
             if (data.email) {
                 setUser(data)
-                getScenarios().then((s) => {
-                    setScenarios(s)
-                    setLoading(false)
-                })
+                getScenarios()
+                    .then((s) => {
+                        if (Array.isArray(s)) setScenarios(s)
+                        setLoading(false)
+                    })
             } 
             else {
                 router.push('/login')
@@ -264,41 +265,42 @@ export default function Dashboard() {
                             ))}
                         </div>
 
-                        {/* Save Scenario */}
-                        <div className="bg-slate-900/40 border border-white/5 backdrop-blur-md rounded-2xl ring-1 ring-white/10 overflow-hidden">
-                            <div className="px-6 py-5 border-b border-white/5 bg-slate-900/50">
-                                <h2 className="text-xl font-semibold text-white tracking-tight">Save Scenario</h2>
-                                <p className="text-sm text-slate-400 mt-1">Save this calculation to revisit later.</p>
+                        {user?.plan === 'pro' && (
+                            <div className="bg-slate-900/40 border border-white/5 backdrop-blur-md rounded-2xl ring-1 ring-white/10 overflow-hidden">
+                                <div className="px-6 py-5 border-b border-white/5 bg-slate-900/50">
+                                    <h2 className="text-xl font-semibold text-white tracking-tight">Save Scenario</h2>
+                                    <p className="text-sm text-slate-400 mt-1">Save this calculation to revisit later.</p>
+                                </div>
+                                <div className="p-6 flex items-center gap-4">
+                                    <input
+                                        type="text"
+                                        value={scenarioName}
+                                        onChange={(e) => setScenarioName(e.target.value)}
+                                        placeholder="e.g. 2025 Full-time estimate"
+                                        className="flex-1 px-4 py-3 bg-slate-950/50 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm"
+                                    />
+                                    <button
+                                        onClick={async () => {
+                                            if (!result || !scenarioName.trim()) return;
+                                            await saveScenario({
+                                                name: scenarioName.trim(),
+                                                gross_income: grossIncome,
+                                                filing_status: filingStatus,
+                                                total_tax: result.total_tax,
+                                                effective_rate: result.effective_rate,
+                                                marginal_rate: result.marginal_rate,
+                                            });
+                                            setScenarioName('');
+                                            getScenarios().then((s) => setScenarios(s));
+                                        }}
+                                        disabled={!scenarioName.trim()}
+                                        className="px-6 py-3 text-sm font-semibold text-white bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/30 hover:bg-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Save
+                                    </button>
+                                </div>
                             </div>
-                            <div className="p-6 flex items-center gap-4">
-                                <input
-                                    type="text"
-                                    value={scenarioName}
-                                    onChange={(e) => setScenarioName(e.target.value)}
-                                    placeholder="e.g. 2025 Full-time estimate"
-                                    className="flex-1 px-4 py-3 bg-slate-950/50 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm"
-                                />
-                                <button
-                                    onClick={async () => {
-                                        if (!result || !scenarioName.trim()) return;
-                                        await saveScenario({
-                                            name: scenarioName.trim(),
-                                            gross_income: grossIncome,
-                                            filing_status: filingStatus,
-                                            total_tax: result.total_tax,
-                                            effective_rate: result.effective_rate,
-                                            marginal_rate: result.marginal_rate,
-                                        });
-                                        setScenarioName('');
-                                        getScenarios().then((s) => setScenarios(s));
-                                    }}
-                                    disabled={!scenarioName.trim()}
-                                    className="px-6 py-3 text-sm font-semibold text-white bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/30 hover:bg-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Save
-                                </button>
-                            </div>
-                        </div>
+                        )}
 
                         {/* Detailed summary */}
                         <div className="bg-slate-900/40 border border-white/5 backdrop-blur-md rounded-2xl shadow-2xl ring-1 ring-white/10 overflow-hidden">
