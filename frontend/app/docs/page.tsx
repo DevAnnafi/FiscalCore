@@ -38,7 +38,7 @@ export default function Docs() {
       items: [
         { label: 'Calculate first', desc: 'A report can only be generated after running a tax calculation.' },
         { label: 'Click Download Report', desc: 'Find the button in the Estimated Summary card after calculating.' },
-        { label: 'Report contents', desc: 'The .txt report includes your name, email, income details, tax summary, and full bracket breakdown.' },
+        { label: 'Report contents', desc: 'The pdf report includes your name, email, income details, tax summary, and full bracket breakdown.' },
       ],
     },
     {
