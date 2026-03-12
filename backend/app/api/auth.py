@@ -52,7 +52,7 @@ def get_me(access_token: str = Cookie(None)):
         raise HTTPException(status_code=400)
     payload = jwt.decode()
     email = payload.get("sub")
-    
+    pass
 
     
     
