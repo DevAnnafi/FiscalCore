@@ -11,3 +11,6 @@ class User(Base):
     created_at = Column(DateTime)
     full_name = Column(String, nullable=False)
     plan = Column(String, nullable=False, default="free")
+    mfa_secret = Column(String, nullable=True)
+    mfa_enabled = Column(Boolean, default=False)
+    stripe_customer_id = Column(String, nullable=True)

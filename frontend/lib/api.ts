@@ -97,3 +97,72 @@ export async function createCheckout() {
     });
     return res.json();
 }
+
+export async function updateProfile(full_name: string, email: string) {
+    const res = await fetch(`${API_BASE}/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ full_name, email }),
+    });
+    return res.json();
+}
+
+export async function updatePassword(current_password: string, new_password: string) {
+    const res = await fetch(`${API_BASE}/profile/password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ current_password, new_password }),
+    });
+    return res.json();
+}
+
+export async function deleteAccount() {
+    const res = await fetch(`${API_BASE}/profile`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+    return res.json();
+}
+
+export async function getBilling() {
+    const res = await fetch(`${API_BASE}/payments/billing`, {
+        credentials: 'include',
+    });
+    return res.json();
+}
+
+export async function cancelSubscription() {
+    const res = await fetch(`${API_BASE}/payments/cancel`, {
+        method: 'POST',
+        credentials: 'include',
+    });
+    return res.json();
+}
+
+export async function setupMFA() {
+    const res = await fetch(`${API_BASE}/mfa/setup`, {
+        method: 'POST',
+        credentials: 'include',
+    });
+    return res.json();
+}
+
+export async function verifyMFA(code: string) {
+    const res = await fetch(`${API_BASE}/mfa/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ code }),
+    });
+    return res.json();
+}
+
+export async function disableMFA() {
+    const res = await fetch(`${API_BASE}/mfa`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+    return res.json();
+}

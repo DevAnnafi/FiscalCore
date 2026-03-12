@@ -55,7 +55,7 @@ def get_me(access_token: str = Cookie(None)):
         user = db.query(User).filter(User.email == email).first()
         if user is None:
             raise HTTPException(status_code=401, detail="User not found")
-        return {"email": user.email, "full_name": user.full_name, "plan": user.plan}
+        return {"email": user.email, "full_name": user.full_name, "plan": user.plan, "mfa_enabled": user.mfa_enabled}
 
 
 @router.post("/logout")

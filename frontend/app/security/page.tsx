@@ -1,0 +1,237 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { getMe, logout, setupMFA, verifyMFA, disableMFA, createCheckout } from '@/lib/api';
+
+export default function SecurityPage() {
+    const [user, setUser] = useState<{ email: string; full_name: string; plan: string; mfa_enabled?: boolean } | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [profileOpen, setProfileOpen] = useState(false);
+    const [qrCode, setQrCode] = useState('');
+    const [secret, setSecret] = useState('');
+    const [code, setCode] = useState('');
+    const [setupStep, setSetupStep] = useState<'idle' | 'scan' | 'verify'>('idle');
+    const [msg, setMsg] = useState('');
+    const [msgType, setMsgType] = useState<'success' | 'error'>('success');
+    const [disableConfirm, setDisableConfirm] = useState(false);
+    const profileRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
+
+    useEffect(() => {
+        getMe().then((data) => {
+            if (data.email) { setUser(data); setLoading(false); }
+            else router.push('/login');
+        });
+    }, []);
+
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    async function handleSignOut() { await logout(); router.push('/login'); }
+    const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+    async function handleSetupMFA() {
+        const res = await setupMFA();
+        setQrCode(res.qr_code);
+        setSecret(res.secret);
+        setSetupStep('scan');
+    }
+
+    async function handleVerify() {
+        const res = await verifyMFA(code);
+        if (res.message) {
+            setMsg('MFA enabled successfully');
+            setMsgType('success');
+            setSetupStep('idle');
+            setCode('');
+            getMe().then(setUser);
+        } else {
+            setMsg(res.detail || 'Invalid code');
+            setMsgType('error');
+        }
+        setTimeout(() => setMsg(''), 4000);
+    }
+
+    async function handleDisable() {
+        const res = await disableMFA();
+        setMsg(res.message || 'MFA disabled');
+        setMsgType('success');
+        setDisableConfirm(false);
+        getMe().then(setUser);
+        setTimeout(() => setMsg(''), 4000);
+    }
+
+    const navItems = [
+        { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
+        { id: 'scenarios', label: 'Saved Scenarios', href: '/dashboard', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> },
+        { id: 'calculator', label: 'Tax Calculator', href: '/dashboard', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg> },
+    ];
+
+    const inputCls = "w-full px-4 py-3 bg-slate-950/50 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:ring-1 focus:ring-white/30 focus:border-white/30 transition-all text-sm outline-none";
+
+    if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><div className="flex gap-2">{[0,150,300].map(d => <div key={d} className="w-2 h-2 rounded-full bg-white/40 animate-bounce" style={{animationDelay:`${d}ms`}}/>)}</div></div>;
+
+    const mfaEnabled = user?.mfa_enabled;
+
+    return (
+        <div className="min-h-screen bg-slate-950 text-slate-50 flex">
+            {/* Sidebar */}
+            <aside className={`relative flex flex-col h-screen sticky top-0 border-r border-white/5 bg-slate-950 transition-all duration-300 ${sidebarOpen ? 'w-60' : 'w-16'}`}>
+                <div className="flex items-center justify-between px-4 h-16 border-b border-white/5 shrink-0">
+                    {sidebarOpen && <span className="font-bold tracking-tight text-white text-base">Fiscal<span style={{color:'#2b9d8f'}}>Core</span></span>}
+                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all ${!sidebarOpen ? 'mx-auto' : ''}`}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                    </button>
+                </div>
+                <nav className="flex-1 px-2 py-4 space-y-1">
+                    {navItems.map((item) => (
+                        <a key={item.id} href={item.href} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white hover:bg-white/5 ${!sidebarOpen ? 'justify-center' : ''}`} title={!sidebarOpen ? item.label : undefined}>
+                            <span className="shrink-0">{item.icon}</span>
+                            {sidebarOpen && <span>{item.label}</span>}
+                        </a>
+                    ))}
+                </nav>
+                <div className="px-2 pb-4 shrink-0" ref={profileRef}>
+                    {profileOpen && (
+                        <div className={`mb-2 bg-slate-900 border border-white/10 rounded-xl overflow-hidden shadow-2xl ${sidebarOpen ? 'mx-0' : 'absolute bottom-20 left-2 w-56'}`}>
+                            <div className="px-4 py-3 border-b border-white/5"><p className="text-xs text-slate-500 truncate">{user?.email}</p></div>
+                            {[
+                                { label: 'Profile Settings', href: '/profile', icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
+                                { label: 'Billing', href: '/billing', icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> },
+                                { label: 'Security & MFA', href: '/security', icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> },
+                            ].map((item) => (
+                                <a key={item.label} href={item.href} className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors border-b border-white/5">
+                                    <span className="text-slate-400">{item.icon}</span>{item.label}
+                                </a>
+                            ))}
+                            {user?.plan !== 'pro' && (
+                                <button onClick={async () => { const { url } = await createCheckout(); window.location.href = url; }} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold hover:bg-white/5 transition-colors border-b border-white/5" style={{color:'#2b9d8f'}}>
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                    Upgrade to Pro
+                                </button>
+                            )}
+                            <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-400 hover:text-red-400 hover:bg-red-400/5 transition-colors">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                Sign Out
+                            </button>
+                        </div>
+                    )}
+                    <button onClick={() => setProfileOpen(!profileOpen)} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-all border border-transparent hover:border-white/10 ${profileOpen ? 'bg-white/5 border-white/10' : ''} ${!sidebarOpen ? 'justify-center' : ''}`}>
+                        <div className="w-8 h-8 rounded-full bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
+                            <span className="text-xs font-semibold text-white">{user ? getInitials(user.full_name) : '?'}</span>
+                        </div>
+                        {sidebarOpen && <div className="flex-1 text-left min-w-0"><p className="text-sm font-medium text-white truncate">{user?.full_name}</p><p className="text-xs truncate" style={{color: user?.plan === 'pro' ? '#2b9d8f' : '#71717a'}}>{user?.plan === 'pro' ? 'Pro Plan' : 'Free Plan'}</p></div>}
+                        {sidebarOpen && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500 shrink-0"><path d="M7 15l5-5 5 5"/></svg>}
+                    </button>
+                </div>
+            </aside>
+
+            {/* Main */}
+            <div className="flex-1 min-w-0">
+                <main className="max-w-3xl mx-auto px-6 py-10 space-y-8">
+                    <div>
+                        <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1">Security</h1>
+                        <p className="text-slate-400 text-sm">Manage two-factor authentication and account security.</p>
+                    </div>
+
+                    {msg && <div className={`px-5 py-3.5 rounded-xl border text-sm ${msgType === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>{msg}</div>}
+
+                    {/* MFA Status */}
+                    <div className="bg-slate-900/40 border border-white/5 rounded-2xl ring-1 ring-white/10 overflow-hidden">
+                        <div className="px-6 py-5 border-b border-white/5 bg-slate-900/50 flex items-center justify-between">
+                            <h2 className="text-lg font-semibold text-white">Two-Factor Authentication</h2>
+                            <span className={`px-2.5 py-1 text-xs font-semibold rounded-md ${mfaEnabled ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>
+                                {mfaEnabled ? 'ENABLED' : 'DISABLED'}
+                            </span>
+                        </div>
+                        <div className="p-6">
+                            <p className="text-sm text-slate-400 mb-6">
+                                {mfaEnabled
+                                    ? 'Your account is protected with an authenticator app. Each login requires a 6-digit code.'
+                                    : 'Add an extra layer of security to your account using an authenticator app like Google Authenticator or Authy.'}
+                            </p>
+
+                            {/* Setup flow */}
+                            {!mfaEnabled && setupStep === 'idle' && (
+                                <button onClick={handleSetupMFA} className="px-6 py-2.5 text-sm font-semibold rounded-xl bg-white text-slate-950 hover:bg-slate-100 transition-all">
+                                    Enable 2FA
+                                </button>
+                            )}
+
+                            {setupStep === 'scan' && (
+                                <div className="space-y-6">
+                                    <div>
+                                        <p className="text-sm font-medium text-white mb-3">1. Scan this QR code with your authenticator app</p>
+                                        <div className="inline-block p-3 bg-white rounded-xl">
+                                            <img src={qrCode} alt="QR Code" className="w-48 h-48" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-white mb-2">Or enter this secret manually</p>
+                                        <code className="block px-4 py-3 bg-slate-800 rounded-xl text-xs text-slate-300 font-mono tracking-widest">{secret}</code>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-white mb-2">2. Enter the 6-digit code from your app</p>
+                                        <div className="flex items-center gap-3 max-w-xs">
+                                            <input className={inputCls} value={code} onChange={e => setCode(e.target.value)} placeholder="000000" maxLength={6} />
+                                            <button onClick={handleVerify} disabled={code.length !== 6} className="px-4 py-3 text-sm font-semibold rounded-xl bg-white text-slate-950 hover:bg-slate-100 transition-all disabled:opacity-40 shrink-0">
+                                                Verify
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => setSetupStep('idle')} className="text-sm text-slate-500 hover:text-slate-300 transition-colors">Cancel</button>
+                                </div>
+                            )}
+
+                            {/* Disable MFA */}
+                            {mfaEnabled && (
+                                <div>
+                                    {!disableConfirm ? (
+                                        <button onClick={() => setDisableConfirm(true)} className="px-6 py-2.5 text-sm font-semibold rounded-xl border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-all">
+                                            Disable 2FA
+                                        </button>
+                                    ) : (
+                                        <div className="flex items-center gap-3">
+                                            <p className="text-sm text-red-400 font-medium">Are you sure?</p>
+                                            <button onClick={handleDisable} className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all">Yes, disable</button>
+                                            <button onClick={() => setDisableConfirm(false)} className="px-4 py-2 text-sm font-semibold rounded-lg border border-white/10 text-slate-400 hover:text-white transition-all">Cancel</button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Security tips */}
+                    <div className="bg-slate-900/40 border border-white/5 rounded-2xl ring-1 ring-white/10 overflow-hidden">
+                        <div className="px-6 py-5 border-b border-white/5 bg-slate-900/50">
+                            <h2 className="text-lg font-semibold text-white">Security Tips</h2>
+                        </div>
+                        <div className="divide-y divide-white/5">
+                            {[
+                                { title: 'Use a strong password', desc: 'At least 12 characters with a mix of letters, numbers, and symbols.' },
+                                { title: 'Enable two-factor authentication', desc: 'Protects your account even if your password is compromised.' },
+                                { title: 'Never share your credentials', desc: 'FiscalCore will never ask for your password via email or chat.' },
+                            ].map((tip) => (
+                                <div key={tip.title} className="px-6 py-4 flex items-start gap-4">
+                                    <div className="w-2 h-2 rounded-full bg-white/20 mt-2 shrink-0" />
+                                    <div>
+                                        <p className="text-sm font-medium text-white">{tip.title}</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">{tip.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    );
+}
