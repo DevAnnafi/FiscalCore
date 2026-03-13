@@ -95,5 +95,5 @@ def mfa_login(request: MFALoginRequest, response: Response, temp_token: str = Co
             raise HTTPException(status_code=400, detail="Invalid code")
         response.delete_cookie("temp_token")
         token = create_access_token(data={"sub": user.email})
-        response.set_cookie("access_token", token, httponly=True, secure=False, samesite="lax")
+        response.set_cookie("access_token", token, httponly=True, secure=True, samesite="none")
         return {"message": "Login Successful"}

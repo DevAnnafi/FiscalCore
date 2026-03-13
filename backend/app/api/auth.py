@@ -42,10 +42,10 @@ def login_request(request: LoginRequest, response: Response):
             raise HTTPException(status_code=401, detail="Invalid credentials")
         if user.mfa_enabled:
             temp_token = create_access_token(data={"sub": user.email, "mfa_pending": True})
-            response.set_cookie("temp_token", temp_token, httponly=True, secure=False, samesite="lax")
+            response.set_cookie("temp_token", temp_token, httponly=True, secure=True, samesite="none")
             return {"mfa_required": True}
         token = create_access_token(data={"sub": user.email})
-        response.set_cookie("access_token", token, httponly=True, secure=False, samesite="lax")
+        response.set_cookie("access_token", token, httponly=True, secure=True, samesite="none")
         return {"message": "Login Successful"}
    
 @router.get("/me")
