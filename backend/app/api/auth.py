@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException, status, Response, Cookie
-from app.core.database import SessionLocal
+from fastapi import APIRouter, HTTPException, status, Response, Cookie, Depends
+from app.core.database import SessionLocal, get_db
 from app.models.user import User
 from app.core.security import hash_password, verify_password, create_access_token
 from sqlalchemy.orm import Session
@@ -55,7 +55,7 @@ def get_me(access_token: str = Cookie(None)):
         user = db.query(User).filter(User.email == email).first()
         if user is None:
             raise HTTPException(status_code=401, detail="User not found")
-        return {"email": user.email, "full_name": user.full_name, "plan": user.plan, "mfa_enabled": user.mfa_enabled}
+        return {"email": user.email, "full_name": user.full_name, "plan": user.plan, "mfa_enabled": user.mfa_enabled, "avatar": user.avatar}
 
 
 @router.post("/logout")
@@ -64,6 +64,19 @@ def logout(response: Response, access_token: str = Cookie(None)):
    return {
        "message" : "Logged Out"
    }
+
+def get_current_user(access_token: str = Cookie(None), db: Session = Depends(get_db)):
+    if access_token is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    try:
+        payload = jwt.decode(access_token, settings.secret_key, algorithms=[settings.algorithm])
+        email = payload.get("sub")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    user = db.query(User).filter(User.email == email).first()
+    if user is None:
+        raise HTTPException(status_code=401, detail="User not found")
+    return user
     
     
     

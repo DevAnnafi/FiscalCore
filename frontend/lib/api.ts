@@ -4,10 +4,10 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v
 
 export async function calculateTax(parameter: TaxRequest): 
 Promise<TaxResult> {
-
     const options = {
         method : "POST", 
         headers : {"Content-Type": "application/json"}, 
+        credentials: 'include',
         body: JSON.stringify(parameter)}
     const response = await fetch(`${API_BASE}/calculate/federal`, options)
     const data = await response.json()
@@ -162,6 +162,34 @@ export async function verifyMFA(code: string) {
 export async function disableMFA() {
     const res = await fetch(`${API_BASE}/mfa`, {
         method: 'DELETE',
+        credentials: 'include',
+    });
+    return res.json();
+}
+
+export async function uploadAvatar(file: File) {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch(`${API_BASE}/profile/avatar`, {
+        method: 'POST',
+        credentials: 'include',
+        body: form,
+    });
+    return res.json();
+}
+
+export async function updateAvatarColor(color: string) {
+    const res = await fetch(`${API_BASE}/profile/avatar/color`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ color }),
+    });
+    return res.json();
+}
+
+export async function getLastResult() {
+    const res = await fetch(`${API_BASE}/calculate/last`, {
         credentials: 'include',
     });
     return res.json();

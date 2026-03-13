@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
 from app.core.database import Base
 
 class User(Base):
@@ -14,3 +14,5 @@ class User(Base):
     mfa_secret = Column(String, nullable=True)
     mfa_enabled = Column(Boolean, default=False)
     stripe_customer_id = Column(String, nullable=True)
+    avatar = Column(String, nullable=True)
+    last_result = Column(Text, nullable=True)

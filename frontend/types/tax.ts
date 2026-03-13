@@ -12,6 +12,7 @@ export interface BracketResult {
 }
 
 export interface TaxResult {
+    filing_status: string,
     taxable_income : number,
     standard_deduction : number,
     total_tax : number,

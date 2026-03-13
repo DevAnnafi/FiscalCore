@@ -3,16 +3,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getMe, logout, createCheckout } from '@/lib/api';
+import { getLastResult } from '@/lib/api';
 
 interface TaxResult {
-    gross_income: number;
     filing_status: string;
     standard_deduction: number;
     taxable_income: number;
     total_tax: number;
     effective_rate: number;
     marginal_rate: number;
-    brackets: { rate: number; taxable_amount: number; tax_owed: number }[];
+    brackets: { rate: number; taxable_income_in_bracket: number; tax_in_bracket: number }[];
 }
 
 export default function SummaryPage() {
@@ -28,8 +28,7 @@ export default function SummaryPage() {
         getMe().then((data) => {
             if (data.email) {
                 setUser(data);
-                const stored = localStorage.getItem('fiscalcore_last_result');
-                if (stored) setResult(JSON.parse(stored));
+                getLastResult().then((data) => { if (data?.total_tax !== undefined) setResult(data); });
                 setLoading(false);
             } else {
                 router.push('/login');
@@ -73,7 +72,7 @@ export default function SummaryPage() {
         doc.text('INPUTS', 20, 52);
         doc.setFont('courier', 'normal');
         doc.setFontSize(10);
-        doc.text(`Gross Income: ${fmt(result.gross_income)}`, 20, 60);
+        doc.text(`Gross Income: ${fmt(result.taxable_income + result.standard_deduction)}`, 20, 60);
         doc.text(`Filing Status: ${filingLabels[result.filing_status] || result.filing_status}`, 20, 67);
         doc.text(`Standard Deduction: ${fmt(result.standard_deduction)}`, 20, 74);
         doc.text(`Taxable Income: ${fmt(result.taxable_income)}`, 20, 81);
@@ -94,8 +93,8 @@ export default function SummaryPage() {
         doc.setFontSize(9);
         let y = 137;
         result.brackets.forEach((b) => {
-            if (b.taxable_amount > 0) {
-                doc.text(`${pct(b.rate)} — Taxable: ${fmt(b.taxable_amount)} — Tax: ${fmt(b.tax_owed)}`, 20, y);
+            if (b.taxable_income_in_bracket > 0) {
+                doc.text(`${pct(b.rate)} — Taxable: ${fmt(b.taxable_income_in_bracket)} — Tax: ${fmt(b.tax_in_bracket)}`, 20, y);
                 y += 7;
             }
         });
@@ -107,8 +106,8 @@ export default function SummaryPage() {
 
     const navItems = [
         { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
-        { id: 'scenarios', label: 'Saved Scenarios', href: '/dashboard', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> },
-        { id: 'calculator', label: 'Tax Calculator', href: '/dashboard', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg> },
+        { id: 'scenarios', label: 'Saved Scenarios', href: '/scenarios', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> },
+        { id: 'calculator', label: 'Tax Calculator', href: '/calculator', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg> },
         { id: 'summary', label: 'Estimated Summary', href: '/summary', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>, pro: true },
     ];
 
@@ -121,7 +120,7 @@ export default function SummaryPage() {
             {/* Sidebar */}
             <aside className={`relative flex flex-col h-screen sticky top-0 border-r border-white/5 bg-slate-950 transition-all duration-300 ${sidebarOpen ? 'w-60' : 'w-16'}`}>
                 <div className="flex items-center justify-between px-4 h-16 border-b border-white/5 shrink-0">
-                    {sidebarOpen && <span className="font-bold tracking-tight text-white text-base">Fiscal<span style={{color:'#2b9d8f'}}>Core</span></span>}
+                    {sidebarOpen && <img src="/FiscalCoreLogo.png" alt="FiscalCore" className="w-12 h-12 object-contain" />}
                     <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all ${!sidebarOpen ? 'mx-auto' : ''}`}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
                     </button>
@@ -248,7 +247,7 @@ export default function SummaryPage() {
                                 </div>
                                 <div className="divide-y divide-white/5">
                                     {[
-                                        { label: 'Gross Income', value: fmt(result.gross_income) },
+                                        { label: 'Gross Income', value: fmt(result.taxable_income + result.standard_deduction) },
                                         { label: 'Filing Status', value: filingLabels[result.filing_status] || result.filing_status },
                                         { label: 'Standard Deduction', value: `− ${fmt(result.standard_deduction)}` },
                                         { label: 'Taxable Income', value: fmt(result.taxable_income), bold: true },
@@ -276,11 +275,11 @@ export default function SummaryPage() {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-white/5">
-                                            {result.brackets.filter(b => b.taxable_amount > 0).map((b, i) => (
+                                            {result.brackets.filter(b => b.taxable_income_in_bracket > 0).map((b, i) => (
                                                 <tr key={i} className="hover:bg-white/5 transition-colors">
                                                     <td className="px-6 py-4 font-mono text-white">{pct(b.rate)}</td>
-                                                    <td className="px-6 py-4 text-right text-slate-300">{fmt(b.taxable_amount)}</td>
-                                                    <td className="px-6 py-4 text-right text-slate-300">{fmt(b.tax_owed)}</td>
+                                                    <td className="px-6 py-4 text-right text-slate-300">{fmt(b.taxable_income_in_bracket)}</td>
+                                                    <td className="px-6 py-4 text-right text-slate-300">{fmt(b.tax_in_bracket)}</td>
                                                 </tr>
                                             ))}
                                             <tr className="bg-white/5">

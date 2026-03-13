@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException, Cookie
+from fastapi import APIRouter, HTTPException, Cookie, UploadFile, File
 from app.core.database import SessionLocal
 from app.core.security import verify_password, hash_password
 from app.core.config import settings
 from app.models.user import User
 from jose import jwt
 from pydantic import BaseModel
+import base64
 
 router = APIRouter()
 
@@ -59,3 +60,29 @@ def delete_account(access_token: str = Cookie(None)):
         db.delete(user)
         db.commit()
         return {"message": "Account deleted successfully"}
+    
+@router.post("/profile/avatar")
+async def update_avatar(file: UploadFile = File(...), access_token: str = Cookie(None)):
+    if access_token is None:
+        raise HTTPException(status_code=401)
+    contents = await file.read()
+    if len(contents) > 2 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image must be under 2MB")
+    b64 = base64.b64encode(contents).decode()
+    mime = file.content_type
+    data_url = f"data:{mime};base64,{b64}"
+    with SessionLocal() as db:
+        user = get_user_from_token(access_token, db)
+        user.avatar = data_url
+        db.commit()
+        return {"avatar": data_url}
+
+@router.put("/profile/avatar/color")
+def update_avatar_color(request: dict, access_token: str = Cookie(None)):
+    if access_token is None:
+        raise HTTPException(status_code=401)
+    with SessionLocal() as db:
+        user = get_user_from_token(access_token, db)
+        user.avatar = request.get("color")
+        db.commit()
+        return {"avatar": user.avatar}

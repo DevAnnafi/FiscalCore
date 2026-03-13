@@ -8,9 +8,9 @@ export default function Home() {
 
       {/* Header */}
       <header style={{ padding: '24px 40px', display: 'grid', gridTemplateColumns: '200px 1fr 200px', alignItems: 'center', borderBottom: '1px solid #e4e4e7', backgroundColor: '#f4f4f5', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
           Fiscal<span style={{ color: '#2b9d8f' }}>Core</span>
-        </div>
+      </div>
         <nav style={{ display: 'flex', gap: '32px', justifyContent: 'center' }}>
            {[
             { label: 'Features', href: '#features' },
@@ -136,7 +136,7 @@ export default function Home() {
                 { step: '01 — Create Account', action: 'Sign up with your name and email. No credit card required.', result: 'Secure account with HTTP-only cookie auth', highlight: false },
                 { step: '02 — Enter Income', action: 'Input your gross annual income and select your filing status.', result: 'Instant 2025 federal tax calculation', highlight: true },
                 { step: '03 — Review Results', action: 'See your total tax, effective rate, marginal rate, and bracket breakdown.', result: 'Full tax liability picture in seconds', highlight: false },
-                { step: '04 — Download Report', action: 'Export a detailed tax report with all figures for your records.', result: 'Formatted .txt report ready to share', highlight: true },
+                { step: '04 — Download Report', action: 'Export a detailed tax report with all figures for your records.', result: 'Formatted pdf report ready to share', highlight: true },
               ].map((row) => (
                 <tr key={row.step}>
                   <td style={{ padding: '20px 16px', borderBottom: '1px solid #d4d4d8', fontWeight: 500, color: '#18181b', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.8rem' }}>{row.step}</td>
