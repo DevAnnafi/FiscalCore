@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Cookie
 from app.core.database import SessionLocal
 from app.core.config import settings
 from app.models.user import User
+from app.core.security import create_access_token
 from jose import jwt
 from pydantic import BaseModel
 import pyotp
@@ -13,6 +14,9 @@ import base64
 router = APIRouter()
 
 class VerifyMFARequest(BaseModel):
+    code: str
+
+class MFALoginRequest(BaseModel):
     code: str
 
 def get_user_from_token(access_token: str, db):
@@ -65,3 +69,31 @@ def disable_mfa(access_token: str = Cookie(None)):
         user.mfa_secret = None
         db.commit()
         return {"message": "MFA disabled successfully"}
+    
+from fastapi import Response
+
+class MFALoginRequest(BaseModel):
+    code: str
+
+@router.post("/mfa/login")
+def mfa_login(request: MFALoginRequest, response: Response, temp_token: str = Cookie(None)):
+    if temp_token is None:
+        raise HTTPException(status_code=401, detail="No pending MFA session")
+    try:
+        payload = jwt.decode(temp_token, settings.secret_key, algorithms=[settings.algorithm])
+        if not payload.get("mfa_pending"):
+            raise HTTPException(status_code=401, detail="Invalid temp token")
+        email = payload.get("sub")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    with SessionLocal() as db:
+        user = db.query(User).filter(User.email == email).first()
+        if not user or not user.mfa_secret:
+            raise HTTPException(status_code=401)
+        totp = pyotp.TOTP(user.mfa_secret)
+        if not totp.verify(request.code):
+            raise HTTPException(status_code=400, detail="Invalid code")
+        response.delete_cookie("temp_token")
+        token = create_access_token(data={"sub": user.email})
+        response.set_cookie("access_token", token, httponly=True, secure=False, samesite="lax")
+        return {"message": "Login Successful"}

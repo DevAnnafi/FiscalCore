@@ -194,3 +194,13 @@ export async function getLastResult() {
     });
     return res.json();
 }
+
+export async function verifyMFALogin(code: string) {
+    const res = await fetch(`${API_BASE}/mfa/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ code }),
+    });
+    return res.json();
+}

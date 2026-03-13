@@ -19,6 +19,7 @@ class LoginRequest(BaseModel):
     email:str
     password:str
 
+
 @router.post("/register")
 def register_request(request: RegisterRequest):
     with SessionLocal() as db:
@@ -39,11 +40,13 @@ def login_request(request: LoginRequest, response: Response):
             raise HTTPException(status_code=401, detail="Email does not exist")
         elif not verify_password(request.password, user.hashed_password):
             raise HTTPException(status_code=401, detail="Invalid credentials")
+        if user.mfa_enabled:
+            temp_token = create_access_token(data={"sub": user.email, "mfa_pending": True})
+            response.set_cookie("temp_token", temp_token, httponly=True, secure=False, samesite="lax")
+            return {"mfa_required": True}
         token = create_access_token(data={"sub": user.email})
         response.set_cookie("access_token", token, httponly=True, secure=False, samesite="lax")
-        return {
-            "message" : "Login Successful"
-        }
+        return {"message": "Login Successful"}
    
 @router.get("/me")
 def get_me(access_token: str = Cookie(None)):
