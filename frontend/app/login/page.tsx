@@ -21,9 +21,11 @@ export default function Login() {
             const data = await login(email, password);
             if (data.mfa_required) {
                 setMfaRequired(true);
-            } else {
+            } else if (data.message === 'Login Successful') {
                 localStorage.removeItem('fiscalcore_last_result');
                 router.push('/dashboard');
+            } else {
+                setError(data.detail || 'Invalid email or password');
             }
         } catch {
             setError('Invalid email or password');
