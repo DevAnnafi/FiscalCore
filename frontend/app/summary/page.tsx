@@ -203,7 +203,7 @@ export default function SummaryPage() {
                             <p className="text-slate-400 text-sm max-w-sm mb-6">The Estimated Summary page with PDF download is available on the Pro plan. Upgrade to unlock full breakdowns and downloadable reports.</p>
                             <button onClick={async () => { const { url } = await createCheckout(); window.location.href = url; }}
                                 className="px-6 py-2.5 text-sm font-semibold rounded-xl bg-white text-slate-950 hover:bg-slate-100 transition-all">
-                                Upgrade to Pro — $9.99/mo
+                                Upgrade to Pro — $19.99/mo
                             </button>
                             <p className="text-xs text-slate-600 mt-3">7-day free trial · Cancel anytime</p>
                         </div>

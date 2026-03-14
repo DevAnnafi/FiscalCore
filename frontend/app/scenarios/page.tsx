@@ -137,7 +137,7 @@ export default function ScenariosPage() {
                             </div>
                             <h2 className="text-xl font-bold text-white mb-2">Pro Feature</h2>
                             <p className="text-slate-400 text-sm max-w-sm mb-6">Save and revisit up to 20 tax scenarios. Upgrade to Pro to unlock this feature.</p>
-                            <button onClick={async () => { const { url } = await createCheckout(); window.location.href = url; }} className="px-6 py-2.5 text-sm font-semibold rounded-xl bg-white text-slate-950 hover:bg-slate-100 transition-all">Upgrade to Pro — $9.99/mo</button>
+                            <button onClick={async () => { const { url } = await createCheckout(); window.location.href = url; }} className="px-6 py-2.5 text-sm font-semibold rounded-xl bg-white text-slate-950 hover:bg-slate-100 transition-all">Upgrade to Pro — $19.99/mo</button>
                             <p className="text-xs text-slate-600 mt-3">7-day free trial · Cancel anytime</p>
                         </div>
                     ) : scenarios.length === 0 ? (
