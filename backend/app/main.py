@@ -18,7 +18,7 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=[
             "http://localhost:3000",
-            "https://your-vercel-app.vercel.app",
+            "https://fiscal-core-r3ck-ifoyxxw44-devannafis-projects.vercel.app",
             ],
         allow_methods=["*"],
         allow_headers=["*"],
