@@ -2,16 +2,14 @@ import { TaxRequest, TaxResult } from "@/types/tax";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
 
-export async function calculateTax(parameter: TaxRequest): 
-Promise<TaxResult> {
-    const options = {
-        method : "POST", 
-        headers : {"Content-Type": "application/json"}, 
-        credentials: 'include',
-        body: JSON.stringify(parameter)}
-    const response = await fetch(`${API_BASE}/calculate/federal`, options)
-    const data = await response.json()
-    return data
+export async function calculateTax(params: TaxRequest) {
+    const res = await fetch(`${API_BASE}/calculate/federal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include' as RequestCredentials,
+        body: JSON.stringify(params),
+    });
+    return res.json();
 }
    
 export async function login(email:string, password:string){
