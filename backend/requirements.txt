@@ -13,3 +13,4 @@ stripe
 pyotp
 qrcode[pil]
 bcrypt==4.0.1
+resend
