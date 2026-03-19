@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { sendContact } from '@/lib/api';
 
 const mono = { fontFamily: "'JetBrains Mono', monospace" };
 
@@ -16,8 +15,12 @@ export default function Contact() {
   async function handleSubmit() {
     if (!name || !email || !message) return;
     try {
-        const res = await sendContact({ name, email, subject, message });
-        if (res.message === 'Message sent successfully') {
+        const res = await fetch('https://formspree.io/f/xbdzqnwy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, subject, message }),
+        });
+        if (res.ok) {
             setSubmitted(true);
         } else {
             alert('Failed to send message. Please try again.');
@@ -54,6 +57,7 @@ export default function Contact() {
         <h1 style={{ fontSize: '4rem', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '64px' }}>Contact<span style={{ color: '#2b9d8f' }}>.</span></h1>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'start' }}>
+
           {/* Info */}
           <div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '24px' }}>Get in touch</h2>
