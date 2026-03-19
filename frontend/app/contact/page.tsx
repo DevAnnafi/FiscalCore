@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { sendContact } from '@/lib/api';
 
 const mono = { fontFamily: "'JetBrains Mono', monospace" };
 
@@ -12,10 +13,19 @@ export default function Contact() {
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!name || !email || !message) return;
-    setSubmitted(true);
-  }
+    try {
+        const res = await sendContact({ name, email, subject, message });
+        if (res.message === 'Message sent successfully') {
+            setSubmitted(true);
+        } else {
+            alert('Failed to send message. Please try again.');
+        }
+    } catch {
+        alert('Failed to send message. Please try again.');
+    }
+}
 
   const inputStyle = {
     width: '100%',

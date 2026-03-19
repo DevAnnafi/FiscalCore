@@ -202,3 +202,12 @@ export async function verifyMFALogin(code: string) {
     });
     return res.json();
 }
+
+export async function sendContact(data: { name: string; email: string; subject: string; message: string }) {
+    const res = await fetch(`${API_BASE}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return res.json();
+}
