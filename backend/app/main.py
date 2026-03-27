@@ -7,7 +7,6 @@ from app.api.scenarios import router as scenarios_router
 from app.api.payments import router as payments_router
 from app.api.profile import router as profile_router
 from app.api.mfa import router as mfa_router
-from app.api.contact import router as contact_router
 
 def create_app() -> FastAPI:
     app = FastAPI(
@@ -32,7 +31,6 @@ def create_app() -> FastAPI:
     app.include_router(payments_router, prefix=settings.api_prefix)
     app.include_router(profile_router, prefix=settings.api_prefix)
     app.include_router(mfa_router, prefix=settings.api_prefix)
-    app.include_router(contact_router, prefix=settings.api_prefix)
 
     return app
 
